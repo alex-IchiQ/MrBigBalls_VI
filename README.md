@@ -85,6 +85,12 @@ In short; the reasons and the measurements are in [docs/findings.md](docs/findin
   to title memory (from fxceless and Geckomacabre, on by default here).
 - **Frame record and replay** with per-pass times and shader variants compared
   turn by turn ([docs/replay.md](docs/replay.md)).
+- **NVIDIA: `victory nvprofile`** shows, and with `install` (an administrator
+  prompt once) raises, the driver's reserve for pipeline machine code. It is
+  512 MB by default, and past it the driver removes the device; the idea and
+  the setting are from XCL (ivall/xcl#2590), the code is new. The driver
+  already ships a profile for another game's `victory.exe`, so `install` needs
+  another name for the executable (`--exe`).
 
 ## Credits
 

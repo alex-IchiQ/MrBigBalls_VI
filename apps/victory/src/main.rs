@@ -5,6 +5,8 @@
 
 mod census;
 mod inspect;
+#[cfg(windows)]
+mod nvprofile;
 #[cfg(all(windows, feature = "diagnostics"))]
 mod replay;
 mod run;
@@ -127,6 +129,17 @@ enum Command {
         #[arg(long, hide = true)]
         these: Option<String>,
     },
+    /// NVIDIA: show or raise the driver's reserve for pipeline machine code
+    /// (512 MB by default; past it the driver removes the device) through a
+    /// driver profile of this executable's own.
+    #[cfg(windows)]
+    Nvprofile {
+        #[command(subcommand)]
+        action: Option<nvprofile::Action>,
+        /// The executable the profile is for (default: this one's name).
+        #[arg(long, global = true)]
+        exe: Option<String>,
+    },
     /// Prepare, map and bind a title executable; with --execute, run it.
     Run {
         exe: PathBuf,
@@ -216,6 +229,8 @@ fn main() -> Result<()> {
         Command::Shaders { paths, jobs } => translate::precompile(paths, jobs),
         #[cfg(windows)]
         Command::Warm { jobs, limit, again, used, these } => warm::run(jobs, limit, again, used, these),
+        #[cfg(windows)]
+        Command::Nvprofile { action, exe } => nvprofile::run(action, exe),
         Command::Run {
             exe,
             unimplemented,
