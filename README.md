@@ -89,8 +89,10 @@ In short; the reasons and the measurements are in [docs/findings.md](docs/findin
   prompt once) raises, the driver's reserve for pipeline machine code. It is
   512 MB by default, and past it the driver removes the device; the idea and
   the setting are from XCL (ivall/xcl#2590), the code is new. The driver
-  already ships a profile for another game's `victory.exe`, so `install` needs
-  another name for the executable (`--exe`).
+  already ships a profile for another game's `victory.exe`, so
+  `scripts\play.ps1` runs a copy named `victory-vi.exe` (`-HostName`), and
+  the profile goes on that name, once, from an administrator prompt:
+  `target\diag\victory.exe nvprofile install --exe victory-vi.exe`.
 
 ## Credits
 

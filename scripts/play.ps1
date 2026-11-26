@@ -4,13 +4,17 @@
 # -RayTracing   the title's own ray-traced indirect light: lit interiors, about a third slower
 # -Build        target\diag (the default, the build all measurements are of) or target\release
 # -More         other settings: -More @{VICTORY_PANEL='1'}
+# -HostName     the name of the copy of victory.exe that runs (victory-vi.exe): NVIDIA's driver ships a profile of
+#               another game for victory.exe, and `victory nvprofile install --exe <this name>` needs a name of its own
+#               (-HostName victory.exe runs the build itself)
 # Run it from a normal window, not as administrator: the driver then keeps its shader cache elsewhere.
 param(
     [Parameter(Mandatory)][string]$Exe,
     [switch]$Safe,
     [switch]$RayTracing,
     [ValidateSet('diag', 'release')][string]$Build = 'diag',
-    [hashtable]$More = @{}
+    [hashtable]$More = @{},
+    [string]$HostName = 'victory-vi.exe'
 )
 $settings = @{
     VICTORY_TEXTURE_NO_WAIT = '1'; VICTORY_RELAY = '2'; VICTORY_WIDE_BACK = '1'; VICTORY_CARD_REHASH_RUNS = '1'
@@ -29,6 +33,16 @@ foreach ($k in $More.Keys) { $settings[$k] = $More[$k] }
 $victory = Join-Path $PSScriptRoot "..\target\$Build\victory.exe"
 if (-not (Test-Path $victory)) { Write-Host "No $victory. Build it first (README.md)."; return }
 if (-not (Test-Path $Exe)) { Write-Host "No $Exe."; return }
+if ($HostName -ne 'victory.exe') {
+    # A copy beside the build, made again whenever the build is newer.
+    $copy = Join-Path (Split-Path $victory) $HostName
+    $built = Get-Item $victory
+    $old = Get-Item $copy -ErrorAction SilentlyContinue
+    if (-not $old -or $old.LastWriteTimeUtc -ne $built.LastWriteTimeUtc -or $old.Length -ne $built.Length) {
+        Copy-Item $victory $copy -Force
+    }
+    $victory = $copy
+}
 # (Other settings left over in this window go; where your files are stays.)
 $paths = 'VICTORY_CONFIG', 'VICTORY_GAME_DIR', 'VICTORY_CACHE_DIR', 'VICTORY_DATA_DIR'
 Get-ChildItem Env:VICTORY_* | Where-Object { $_.Name -notin $paths } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
